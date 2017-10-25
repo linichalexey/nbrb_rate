@@ -1,0 +1,4 @@
+name = NBRB Rate
+description = Get currency rate from nbrb.by and store it global variable.
+core = 7.x
+version = 7.x-0.1-dev

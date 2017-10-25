@@ -1,0 +1,35 @@
+<?php
+/**
+ * @file
+ * NBRB Rate installation
+ */
+
+/**
+ * Implements hook_install().
+ */
+function nbrb_rate_install() {
+  // Set default variables.
+  variable_set('nbrb_rate_usd', 1);
+  variable_set('nbrb_rate_eur', 1);
+  
+  // Get localization function for instalation as t() may be unavailable.
+  $t = get_t();
+  
+  //Inform user about variables creation.
+  drupal_set_message($t('Variables for USD and EUR have been created and default value set to 1'));
+}
+
+/**
+ * Implements hook_install().
+ */
+function nbrb_rate_uninstall() {
+  // Remove variables.
+  variable_del('nbrb_rate_usd');
+  variable_del('nbrb_rate_eur');
+  
+  // Get localization function for instalation as t() may be unavailable.
+  $t = get_t();
+  
+  // Inform user about deleting variables.
+  drupal_set_message($t('Variables for USD and EUR have been deleted.'));
+}
