@@ -12,6 +12,11 @@ function nbrb_rate_help($path, $arg) {
     case 'admin/help#nbrb_rate':{
       $ret_val = '<h3>' . t('About') . '</h3>';
       $ret_val .= '<p>' . t('This module gets oficial todays currency rates established by National Bank of the Republic of Belarus and store it in global variables.') . '</p>';
+      $ret_val .= '<h3>' . t('How to use') . '</h3>';
+      $ret_val .= '<p>' . t('Go to configuration page and chose the currency to get and store in variables.') . '<br>' .
+          t('Then you are able to use it calling variable_get().') . '</p>';
+      $ret_val .= '<h3>' . t('Examples') . '</h3>';
+      $ret_val .= '<p>' . t("To get the USD rate, use variable_get('nbrb_rate_usd').") . '</p>';
       return $ret_val;
       break;
     }
@@ -43,12 +48,13 @@ function nbrb_rate_menu() {
   
   // Admin configuration - Settings.
   $items['admin/config/nbrb_rate/manage'] = array(
-    'title' => 'NBRB Rate settings',
+    'title' => 'Get rates',
     'description' => 'Manage NBRB Rate settings and configurations',
     'access arguments' => array('administer nbrb rate'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('nbrb_rate_settings_form'),
   );
+
   return $items;
 }
 
@@ -64,13 +70,39 @@ function nbrb_rate_settings_form($node, &$form_state) {
   $form['nbrb_currency'] = array(
     '#title' => 'Choose currency',
     '#type' => 'select',
-    '#description' => t('Choosen curency rate will be get as soon as cron run.'),
+    '#description' => t('Choosen curency rates will be get as soon as cron run.'),
     '#options' => array(
       1 => 'USD',
       2 => 'EUR',
     ),
+    '#empty_option' => t('- Select -'),
     '#default_value' => variable_get('nbrb_currency'),
   );
+  
+  $currency = variable_get('nbrb_currency');
+  $rate = 0;
+  $var_to_set = '';
+  switch ($currency) {
+    case 1:{
+      $rate = 145;
+      $var_to_set = 'nbrb_rate_usd';
+      break;
+    }
+    case 2:{
+      $rate = 292;
+      $var_to_set = 'nbrb_rate_eur';
+      break;
+    }
+  }
+  $url = 'http://www.nbrb.by/API/ExRates/Rates/' . $rate;
+  $ch = curl_init(); 
+  curl_setopt($ch, CURLOPT_URL, $url); 
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 1); 
+  $out = curl_exec($ch); 
+  $cur = json_decode($out, TRUE)['Cur_OfficialRate'];
+  curl_close($ch);
+  variable_set($var_to_set, $cur);  
   
   return system_settings_form($form);
 }
@@ -105,5 +137,6 @@ function nbrb_rate_cron() {
   variable_set($var_to_set, $cur);
   
   // Inform user.
-  drupal_set_message(t("Variable $var_to_set is set to $cur"));
+  drupal_set_message(t("Variable @var is set to @cur", array('@var' => $var_to_set, '@cur' => $cur)));
+  
 }

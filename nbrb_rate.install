@@ -26,6 +26,7 @@ function nbrb_rate_uninstall() {
   // Remove variables.
   variable_del('nbrb_rate_usd');
   variable_del('nbrb_rate_eur');
+  variable_del('nbrb_currency');
   
   // Get localization function for instalation as t() may be unavailable.
   $t = get_t();
